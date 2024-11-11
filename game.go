@@ -18,6 +18,8 @@ const SHEET_HEIGHT = 16
 
 const TILES_SIZE = TILE_WIDTH * TILE_HEIGHT / 2
 
+const SHEET_SIZE = SHEET_WIDTH * SHEET_HEIGHT * TILES_SIZE // 32 KiB
+
 const PALETTE_SIZE = 32
 
 type RomSrc struct {
@@ -28,6 +30,42 @@ type RomSrc struct {
 	src_length int
 	dst_offset int
 	dst_stride int
+}
+
+type TileType int
+
+const (
+	OBJ  TileType = 0
+	SCR1 TileType = 1
+	SCR2 TileType = 2
+	SCR3 TileType = 3
+)
+
+var tileDimension = []int{
+	16,
+	8,
+	16,
+	32,
+}
+
+var tileBytes = []int{
+	0x80,
+	0x40, // not a bug, the SCR1 tiles are packed ineffieintly
+	0x80,
+	0x200,
+}
+
+var tilesPerAxis = []int{
+	16,
+	32,
+	16,
+	8,
+}
+
+type Area struct {
+	offset    int
+	numSheets int
+	tileType  TileType
 }
 
 type Game struct {
@@ -45,77 +83,223 @@ type Game struct {
 
 	paletteAddr int
 	numPalettes int
+
+	areas []Area
 }
 
-func drawLine(line []byte, x int, y int, img *image.RGBA, palette *Palette) {
-	if len(line) != TILE_WIDTH/2 {
-		panic("Line buffer must be 8 bytes long")
+var pixbit = []byte{128, 64, 32, 16, 8, 4, 2, 1}
+
+func (game *Game) drawTile32(tile []byte, drawAtX int, drawAtY int, img *image.RGBA, palette *Palette) {
+	tileDim := tileDimension[SCR3]
+	offset := 0
+	pens := make([]int, tileDim*tileDim)
+	for y := 0; y < tileDim; y++ {
+		pixels := tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 8
+			}
+		}
+		offset += 4
+
+		pixels = tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 8
+			}
+		}
+		offset += 4
+
+		pixels = tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+16+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+16+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+16+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+16+y*tileDim] += 8
+			}
+		}
+		offset += 4
+
+		pixels = tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+24+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+24+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+24+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+24+y*tileDim] += 8
+			}
+		}
+		offset += 4
 	}
-	cursor := 0
-	for i := 0; i < 2; i++ {
-		// Read four bytes
-		bytes := make([]byte, 4)
-		for j := 0; j < 4; j++ {
-			bytes[j] = line[cursor]
-			cursor += 1
+	// Write pixels to img
+	for y := 0; y < tileDim; y++ {
+		for x := 0; x < tileDim; x++ {
+			value := pens[x+y*tileDim]
+			img.Set(drawAtX+x, drawAtY+y, palette.colors[value])
+		}
+	}
+}
+
+func (game *Game) drawTile8(tile []byte, drawAtX int, drawAtY int, img *image.RGBA, palette *Palette) {
+	tileDim := tileDimension[SCR1]
+	offset := 0
+	pens := make([]int, tileDim*tileDim)
+	for y := 0; y < tileDim; y++ {
+		pixels := tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 8
+			}
+		}
+		offset += 8 // Skip one byte, unused
+	}
+
+	// Write pixels to img
+	for y := 0; y < tileDim; y++ {
+		for x := 0; x < tileDim; x++ {
+			value := pens[x+y*tileDim]
+			img.Set(drawAtX+x, drawAtY+y, palette.colors[value])
+		}
+	}
+}
+
+func (game *Game) drawTile16(tile []byte, drawAtX int, drawAtY int, img *image.RGBA, palette *Palette) {
+	tileDim := tileDimension[OBJ]
+	offset := 0
+	pens := make([]int, tileDim*tileDim)
+	for y := 0; y < tileDim; y++ {
+		pixels := tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+y*tileDim] += 8
+			}
+		}
+		offset += 4
+
+		pixels = tile[offset : offset+4] // Get four bytes
+		for x := 0; x < 8; x++ {
+			if pixels[0]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 1
+			}
+			if pixels[1]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 2
+			}
+			if pixels[2]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 4
+			}
+			if pixels[3]&pixbit[x] != 0 {
+				pens[x+8+y*tileDim] += 8
+			}
 		}
 
-		// Get four index values
-		var bits = []byte{128, 64, 32, 16, 8, 4, 2, 1}
-		for j := 7; j >= 0; j-- {
-			var b1, b2, b3, b4 byte
-			if bytes[0]&bits[j] != 0 {
-				b1 = 1
-			} else {
-				b1 = 0
-			}
-			if bytes[1]&bits[j] != 0 {
-				b2 = 1
-			} else {
-				b2 = 0
-			}
-			if bytes[2]&bits[j] != 0 {
-				b3 = 1
-			} else {
-				b3 = 0
-			}
-			if bytes[3]&bits[j] != 0 {
-				b4 = 1
-			} else {
-				b4 = 0
-			}
-			var value = b4<<3 | b3<<2 | b2<<1 | b1
-			// Write
-			img.Set(x+j+i*8, y, palette.colors[value])
+		offset += 4
+	}
+	// Write pixels to img
+	for y := 0; y < tileDim; y++ {
+		for x := 0; x < tileDim; x++ {
+			value := pens[x+y*tileDim]
+			img.Set(drawAtX+x, drawAtY+y, palette.colors[value])
 		}
 	}
 }
 
-func (game *Game) drawTile(tile []byte, x int, y int, img *image.RGBA, sheetID int) {
-	if len(tile) != TILES_SIZE {
-		errorString := fmt.Sprintf("Tile buffer must be %d bytes long\n", TILES_SIZE)
-		panic(errorString)
-	}
-	palette := game.GetPalette(sheetID, y/16*SHEET_WIDTH+x/16)
-	for i := 0; i < TILE_HEIGHT; i++ {
-		offset := i * TILE_WIDTH / 2
-		drawLine(tile[offset:offset+TILE_WIDTH/2], x, y+i, img, palette)
-	}
-}
-
-func (game *Game) dumpSheet(sheetID int, sheet []byte, folder string) {
+func (game *Game) dumpSheet(areaID int, sheet []byte, tileType TileType, sheetID int) {
 	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{SHEET_WIDTH * TILE_WIDTH, SHEET_HEIGHT * TILE_HEIGHT}})
-	for y := 0; y < SHEET_HEIGHT; y++ {
-		for x := 0; x < SHEET_WIDTH; x++ {
-			offset := (x + y*TILE_WIDTH) * TILES_SIZE
-			game.drawTile(sheet[offset:offset+TILES_SIZE], x*TILE_WIDTH, y*TILE_HEIGHT, img, sheetID)
+	offset := 0
+	bytesPerTile := tileBytes[tileType]
+	tileDim := tileDimension[tileType]
+	tilesPerAxis := tilesPerAxis[tileType]
+	for tileY := 0; tileY < tilesPerAxis; tileY++ {
+		for tileX := 0; tileX < tilesPerAxis; tileX++ {
+			palette := game.GetPalette(sheetID, tileY*SHEET_WIDTH+tileX)
+			drawAtX := tileX * tileDim
+			drawAtY := tileY * tileDim
+			tileBytes := sheet[offset : offset+bytesPerTile]
+			switch tileType {
+			case OBJ:
+				{
+					game.drawTile16(tileBytes, drawAtX, drawAtY, img, palette)
+				}
+			case SCR2:
+				{
+					game.drawTile16(tileBytes, drawAtX, drawAtY, img, palette)
+				}
+			case SCR1:
+				{
+					game.drawTile8(tileBytes, drawAtX, drawAtY, img, palette)
+				}
+			case SCR3:
+				{
+					game.drawTile32(tileBytes, drawAtX, drawAtY, img, palette)
+				}
+			}
+			offset += bytesPerTile
 		}
 	}
-	filename := fmt.Sprintf("%s/%04d.png", folder, sheetID)
-	f, _ := os.Create(filename)
-	defer f.Close()
-	png.Encode(f, img)
-	png2svg(filename, fmt.Sprintf("%s/%04d.svg", folder, sheetID), sheetID)
+	pngfilename := fmt.Sprintf("%s/%s/area_%d_%04d.png", "/Users/leaf/repos/cps_sheet", game.extractFolder(), areaID, sheetID)
+	f, _ := os.Create(pngfilename)
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			fmt.Printf("err=%d", err)
+		}
+	}(f)
+	err := png.Encode(f, img)
+	if err != nil {
+		fmt.Printf("err=%d", err)
+		return
+	}
+	svgFileName := fmt.Sprintf("%s/%s/area_%d_%04d.svg", "/Users/leaf/repos/cps_sheet", game.extractFolder(), areaID, sheetID)
+	png2svg(pngfilename, svgFileName, sheetID, tileType)
 }
 
 func (game *Game) desinterleave(roms []RomSrc, dstROM []byte) bool {
@@ -170,21 +354,22 @@ func (game *Game) Load() bool {
 	return true
 }
 
-func (game *Game) Extract() {
+func (game *Game) DumpSheets() {
 	game.ensureExtractFolder()
-	// A sheet is 16 x 16 tile. Each tile is 16 x 16 texels.
-	const SHEET_SIZE = SHEET_WIDTH * SHEET_HEIGHT * TILES_SIZE // 32 KiB
-	// For each offset at the sprite location, dump a sheet
-	numSheets := len(game.gfxROM) / SHEET_SIZE
-	fmt.Println("Extracting ", numSheets, " sheets.")
-	for i := 0; i < numSheets; i++ {
-		offset := i * SHEET_SIZE
-		sheet := game.gfxROM[offset : offset+SHEET_SIZE]
-		game.dumpSheet(i, sheet, game.extractFolder())
+
+	sheetCounter := 0
+	for i := 0; i < len(game.areas); i++ {
+		area := game.areas[i]
+		for sheetId := 0; sheetId < area.numSheets; sheetId++ {
+			offset := area.offset + sheetId*SHEET_SIZE
+			sheet := game.gfxROM[offset : offset+SHEET_SIZE]
+			game.dumpSheet(i, sheet, area.tileType, sheetCounter)
+			sheetCounter += 1
+		}
 	}
 }
 
-func (game *Game) ExtractPalette() {
+func (game *Game) DumpPaletteToHTML() {
 	if game.codeROM == nil {
 		return
 	}
@@ -205,7 +390,7 @@ func (game *Game) ExtractPalette() {
 }
 
 func (game *Game) w(sheetID int, p *Palette) {
-	sheet := make([]*Palette, 256)
+	sheet := make([]*Palette, 32*32) // Able to hold 16x16(OBJ,SCR2) 8x8 (SCR1), and 32x32 (SCR3) sheets
 
 	for i, _ := range sheet {
 		sheet[i] = p
@@ -214,7 +399,7 @@ func (game *Game) w(sheetID int, p *Palette) {
 	game.palettes[sheetID] = sheet
 }
 
-func (game *Game) s(sheetID int, tileID int, width int, height int, palette *Palette) {
+func (game *Game) s(sheetID int, tileID int, width int, height int, palette *Palette, tileType TileType) {
 	_, hasSheet := game.palettes[sheetID]
 	if !hasSheet {
 		game.w(sheetID, &greyPalette)
@@ -222,15 +407,16 @@ func (game *Game) s(sheetID int, tileID int, width int, height int, palette *Pal
 
 	sheet := game.palettes[sheetID]
 
+	tilesPerAxis := tilesPerAxis[tileType]
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
-			sheet[tileID+i*16+j] = palette
+			sheet[tileID+i*tilesPerAxis+j] = palette
 		}
 	}
 }
 
-func (game *Game) u(sheetID int, tileID int, palette *Palette) {
-	game.s(sheetID, tileID, 1, 1, palette)
+func (game *Game) u(sheetID int, tileID int, palette *Palette, tileType TileType) {
+	game.s(sheetID, tileID, 1, 1, palette, tileType)
 }
 
 func (game *Game) GetPalette(sheetID int, tileNumber int) *Palette {

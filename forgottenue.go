@@ -8,7 +8,7 @@ func (game ForgottenUE) GetName() string {
 	return game.name
 }
 
-func makeForgottenUE() ForgottenUE {
+func makeForgottenUE() *ForgottenUE {
 	var game ForgottenUE
 	game.gfxROMSize = 0x400000
 	game.gfx_banks = []RomSrc{
@@ -25,7 +25,7 @@ func makeForgottenUE() ForgottenUE {
 	game.name = "forgottnue"
 	game.paletteAddr = 0
 
-	return game
+	return &game
 }
 
 func (game *ForgottenUE) Load() bool {

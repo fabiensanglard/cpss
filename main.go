@@ -6,41 +6,40 @@ import (
 
 type Extractable interface {
 	Load() bool
-	Extract()
-	ExtractPalette()
+	DumpSheets()
+	DumpPaletteToHTML()
 	GetName() string
 }
 
 func main() {
 	fmt.Println("Extracting...")
 
-	var sf2 = makeSF2()
-	//var ghouls = makeGhouls()
-	//var sf2hf = makeSF2HF()
-	//var ffight = makeFFight()
-	//var pang3 = makePang3()
-	//var ssf = makeSSF()
-	//var sfa3 = makeSFA3()
-	//var sfa = makeSFA()
-	//var strider = makeStrider()
-	//var fw = makeForgottenUE()
-	//var caw = makeCAW()
+	var games = make([]Extractable, 0)
+	games = append(games, makeCAW())
+	games = append(games, makeFFight())
+	games = append(games, makeForgottenUE())
+	games = append(games, makeGhouls())
+	games = append(games, makePang3())
+	games = append(games, makeSF2())
+	games = append(games, makeSF2HF())
+	games = append(games, makeSFA())
+	games = append(games, makeSFA3())
+	games = append(games, makeSSF())
+	games = append(games, makeStrider())
 
 	//var wg sync.WaitGroup
 
-	var games = []Extractable{&sf2} //, &ffight, &ghouls, &sf2hf, &pang3, &ssf, &sfa3, &sfa, &strider, &fw, &ssf, &caw}
-	//var games = []Extractable{ &ffight}
 	for _, game := range games {
 		if game.Load() {
 			fmt.Println("Found game:", game.GetName())
 			//wg.Add(2)
 			//go func() {
 			//	defer wg.Done()
-			game.Extract()
+			game.DumpSheets()
 			//}()
 			//go func() {
 			//	defer wg.Done()
-			game.ExtractPalette()
+			game.DumpPaletteToHTML()
 			//}()
 		}
 	}

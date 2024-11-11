@@ -19,7 +19,7 @@ func (game *SF2) GetName() string {
 	return game.name
 }
 
-func makeSF2() SF2 {
+func makeSF2() *SF2 {
 	var game SF2
 
 	game.gfxROMSize = 0x600000
@@ -55,10 +55,17 @@ func makeSF2() SF2 {
 		{"sf2_36b.10f", "b807cc495bff3f95d03b061fc629c95f965cb6d8", 1, 0, 0x20000, 0xc0000, 2},
 	}
 	game.paletteAddr = 0x8ACBA
-    game.numPalettes = 300
+	game.numPalettes = 300
+
+	game.areas = []Area{
+		{0, 0x480000 / (1 << 15), OBJ},
+		{0x500000, 0x40000 / (1 << 15), SCR1},
+		{0x540000, 0x80000 / (1 << 15), SCR2},
+		{0x480000, 0x80000 / (1 << 15), SCR3},
+	}
 
 	game.name = "sf2"
-	return game
+	return &game
 }
 
 func (game *SF2) Load() bool {
@@ -97,21 +104,21 @@ func (game *SF2) Load() bool {
 	shimo.colors[12] = color.RGBA{0xFF, 0xFF, 0xFF, 0xff}
 
 	game.w(0, ryu)
-	game.s(0, 0xED, 3, 2, ken)
+	game.s(0, 0xED, 3, 2, ken, OBJ)
 
 	game.w(1, ken)
-	game.s(1, 0x0, 4, 5, ryu)
-	game.s(1, 0x48, 8, 11, ryu)
-	game.s(1, 0xA1, 3, 6, ryu)
-	game.s(1, 0xD0, 1, 1, ryu)
-	game.s(1, 0x84, 4, 6, ryu)
+	game.s(1, 0x0, 4, 5, ryu, OBJ)
+	game.s(1, 0x48, 8, 11, ryu, OBJ)
+	game.s(1, 0xA1, 3, 6, ryu, OBJ)
+	game.s(1, 0xD0, 1, 1, ryu, OBJ)
+	game.s(1, 0x84, 4, 6, ryu, OBJ)
 
 	game.w(2, ryu)
 
 	for i := 4; i <= 9; i++ {
 		game.w(i, hon)
 	}
-	game.s(4, 0x01, 7, 5, flam)
+	game.s(4, 0x01, 7, 5, flam, OBJ)
 
 	for i := 10; i <= 13; i++ {
 		game.w(i, bla)
@@ -121,9 +128,9 @@ func (game *SF2) Load() bool {
 		game.w(i, hon)
 	}
 
-	game.s(14, 0x67, 3, 1, fb)
-	game.s(14, 0x5B, 3, 1, fb)
-	game.s(14, 0x4F, 1, 1, fb)
+	game.s(14, 0x67, 3, 1, fb, OBJ)
+	game.s(14, 0x5B, 3, 1, fb, OBJ)
+	game.s(14, 0x4F, 1, 1, fb, OBJ)
 
 	game.w(17, ryu)
 
@@ -135,8 +142,8 @@ func (game *SF2) Load() bool {
 		game.w(i, zan)
 	}
 
-	game.s(33, 0xD0, 16, 3, flam)
-	game.s(33, 0x8A, 6, 5, flam)
+	game.s(33, 0xD0, 16, 3, flam, OBJ)
+	game.s(33, 0x8A, 6, 5, flam, OBJ)
 
 	for i := 34; i <= 39; i++ {
 		game.w(i, hon)
@@ -146,11 +153,11 @@ func (game *SF2) Load() bool {
 		game.w(i, dal)
 	}
 
-	game.s(51, 0x60, 3, 6, chu)
-	game.s(51, 0x63, 1, 2, chu)
-	game.s(51, 0x3C, 1, 1, bla)
-	game.s(51, 0x4C, 3, 1, bla)
-	game.s(51, 0x4D, 2, 3, bla)
+	game.s(51, 0x60, 3, 6, chu, OBJ)
+	game.s(51, 0x63, 1, 2, chu, OBJ)
+	game.s(51, 0x3C, 1, 1, bla, OBJ)
+	game.s(51, 0x4C, 3, 1, bla, OBJ)
+	game.s(51, 0x4D, 2, 3, bla, OBJ)
 
 	for i := 54; i <= 59; i++ {
 		game.w(i, dac)
@@ -160,40 +167,40 @@ func (game *SF2) Load() bool {
 		game.w(i, ryu)
 	}
 
-	game.s(69, 0x0D, 1, 1, credit)
-	game.s(69, 0x40, 1, 1, credit)
-	game.s(69, 0x43, 1, 1, credit)
-	game.s(69, 0x4E, 1, 1, credit)
-	game.s(69, 0xC2, 1, 1, credit)
-	game.s(69, 0x54, 1, 1, credit)
-	game.s(69, 0x58, 1, 1, credit)
-	game.s(69, 0x5F, 1, 1, credit)
-	game.s(69, 0xA1, 1, 1, credit)
-	game.s(69, 0xA6, 1, 2, shimo)
-	game.s(69, 0xB6, 3, 1, shimo)
-	game.s(69, 0xBE, 2, 1, credit)
+	game.s(69, 0x0D, 1, 1, credit, OBJ)
+	game.s(69, 0x40, 1, 1, credit, OBJ)
+	game.s(69, 0x43, 1, 1, credit, OBJ)
+	game.s(69, 0x4E, 1, 1, credit, OBJ)
+	game.s(69, 0xC2, 1, 1, credit, OBJ)
+	game.s(69, 0x54, 1, 1, credit, OBJ)
+	game.s(69, 0x58, 1, 1, credit, OBJ)
+	game.s(69, 0x5F, 1, 1, credit, OBJ)
+	game.s(69, 0xA1, 1, 1, credit, OBJ)
+	game.s(69, 0xA6, 1, 2, shimo, OBJ)
+	game.s(69, 0xB6, 3, 1, shimo, OBJ)
+	game.s(69, 0xBE, 2, 1, credit, OBJ)
 
-	game.s(69, 0x98, 1, 1, ken)
-	game.s(69, 0xAA, 1, 1, ken)
-	game.s(69, 0xB9, 2, 1, ken)
+	game.s(69, 0x98, 1, 1, ken, OBJ)
+	game.s(69, 0xAA, 1, 1, ken, OBJ)
+	game.s(69, 0xB9, 2, 1, ken, OBJ)
 
-	game.s(69, 0xC2, 2, 2, credit)
-	game.s(69, 0xC4, 1, 1, credit)
+	game.s(69, 0xC2, 2, 2, credit, OBJ)
+	game.s(69, 0xC4, 1, 1, credit, OBJ)
 
-	game.s(69, 0xC5, 2, 1, chu)
-	game.s(69, 0xD4, 2, 2, chu)
-	game.s(69, 0xE0, 1, 1, chu)
-	game.s(69, 0xE3, 1, 1, chu)
-	game.s(69, 0xE6, 2, 1, chu)
-	game.s(69, 0xF8, 1, 1, chu)
-	game.s(69, 0xCC, 4, 4, chu)
+	game.s(69, 0xC5, 2, 1, chu, OBJ)
+	game.s(69, 0xD4, 2, 2, chu, OBJ)
+	game.s(69, 0xE0, 1, 1, chu, OBJ)
+	game.s(69, 0xE3, 1, 1, chu, OBJ)
+	game.s(69, 0xE6, 2, 1, chu, OBJ)
+	game.s(69, 0xF8, 1, 1, chu, OBJ)
+	game.s(69, 0xCC, 4, 4, chu, OBJ)
 
 	game.w(71, ken)
-	game.s(71, 0xC0, 2, 2, shimo)
-	game.s(71, 0x38, 2, 1, shimo)
-	game.s(71, 0x8D, 3, 4, flam)
-	game.s(71, 0xCF, 1, 4, flam)
-	game.s(71, 0x2D, 3, 1, chu)
+	game.s(71, 0xC0, 2, 2, shimo, OBJ)
+	game.s(71, 0x38, 2, 1, shimo, OBJ)
+	game.s(71, 0x8D, 3, 4, flam, OBJ)
+	game.s(71, 0xCF, 1, 4, flam, OBJ)
+	game.s(71, 0x2D, 3, 1, chu, OBJ)
 
 	for i := 72; i <= 77; i++ {
 		game.w(i, box)
@@ -202,8 +209,8 @@ func (game *SF2) Load() bool {
 	for i := 78; i <= 83; i++ {
 		game.w(i, sag)
 	}
-	game.s(78, 0x00, 4, 1, box)
-	game.s(78, 0x10, 3, 4, box)
+	game.s(78, 0x00, 4, 1, box, OBJ)
+	game.s(78, 0x10, 3, 4, box, OBJ)
 
 	game.w(84, chu)
 
@@ -215,7 +222,7 @@ func (game *SF2) Load() bool {
 		game.w(i, dic)
 	}
 
-	game.s(99, 0x24, 4, 8, elec)
+	game.s(99, 0x24, 4, 8, elec, OBJ)
 
 	for i := 100; i <= 101; i++ {
 		game.w(i, gui)
@@ -233,23 +240,24 @@ func (game *SF2) Load() bool {
 		game.w(i, gui)
 	}
 
-	game.s(123, 0xC8, 8, 2, warrier)
+	game.s(123, 0xC8, 8, 2, warrier, OBJ)
 
 	game.w(128, font)
 	game.w(129, font)
 
-	game.s(129, 0xDE, 2, 2, health_bar)
-	game.s(129, 0xF0, 16, 1, health_bar)
+	game.s(129, 0xDE, 2, 2, health_bar, OBJ)
+	game.s(129, 0xF0, 16, 1, health_bar, OBJ)
 
-	game.s(130, 0x40, 16, 7, logo)
-	game.s(130, 0xB1, 7, 1, logo)
-	game.s(130, 0xC0, 9, 3, logo)
-	game.s(130, 0xF0, 8, 1, logo)
+	game.s(130, 0x40, 16, 7, logo, OBJ)
+	game.s(130, 0xB1, 7, 1, logo, OBJ)
+	game.s(130, 0xC0, 9, 3, logo, OBJ)
+	game.s(130, 0xF0, 8, 1, logo, OBJ)
 
 	for i := 136; i <= 143; i++ {
 		game.w(i, zan)
 	}
 
+	game.w(144, font)
 	return true
 }
 

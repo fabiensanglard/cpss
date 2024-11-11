@@ -8,7 +8,7 @@ func (game *SF2HF) GetName() string {
 	return game.name
 }
 
-func makeSF2HF() SF2HF {
+func makeSF2HF() *SF2HF {
 	var game SF2HF
 	game.gfxROMSize = 0x600000
 	game.gfx_banks = []RomSrc{
@@ -46,7 +46,7 @@ func makeSF2HF() SF2HF {
 	game.paletteAddr = 0x8ACBA
 
 	game.name = "sf2hf"
-	return game
+	return &game
 }
 
 func (game *SF2HF) Load() bool {
@@ -54,6 +54,6 @@ func (game *SF2HF) Load() bool {
 		return false
 	}
 	game.w(0x00, game.RetrievePalette(1))
-	game.s(123, 0xC8, 8, 2, game.RetrievePalette(0x11E))
+	game.s(123, 0xC8, 8, 2, game.RetrievePalette(0x11E), OBJ)
 	return true
 }

@@ -8,7 +8,7 @@ func (game *Pang3) GetName() string {
 	return game.name
 }
 
-func makePang3() Pang3 {
+func makePang3() *Pang3 {
 	var game Pang3
 	game.gfxROMSize = 0x400000 // 2 MiB each
 	game.gfx_banks = []RomSrc{
@@ -20,5 +20,5 @@ func makePang3() Pang3 {
 	game.name = "pang3"
 	game.paletteAddr = 0
 
-	return game
+	return &game
 }

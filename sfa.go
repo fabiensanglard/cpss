@@ -8,7 +8,7 @@ func (game *SFA) GetName() string {
 	return game.name
 }
 
-func makeSFA() SFA {
+func makeSFA() *SFA {
 	var game SFA
 	game.gfxROMSize = 0x1000000
 	game.gfx_banks = []RomSrc{
@@ -21,5 +21,5 @@ func makeSFA() SFA {
 	game.paletteAddr = 0
 
 	game.name = "sfa"
-	return game
+	return &game
 }

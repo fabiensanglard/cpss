@@ -8,7 +8,7 @@ func (game FFight) GetName() string {
 	return game.name
 }
 
-func makeFFight() FFight {
+func makeFFight() *FFight {
 	var game FFight
 	game.gfxROMSize = 0x200000
 	game.gfx_banks = []RomSrc{
@@ -31,7 +31,12 @@ func makeFFight() FFight {
 	}
 	game.paletteAddr = 0xC0000
 	game.numPalettes = 300
-	return game
+
+	game.areas = []Area{
+		{0, 0x200000 / (1 << 15), OBJ},
+	}
+
+	return &game
 }
 
 func (game *FFight) Load() bool {
@@ -42,7 +47,7 @@ func (game *FFight) Load() bool {
 	// Swap the latest part 16-bit WORDS.
 	// This is a weird ROM but i am too lazy to make my deinterlave() smarter.
 	// So I just hack it in here.
-	for i := 0; i < 0x80000 -1; i+=2 {
+	for i := 0; i < 0x80000-1; i += 2 {
 		v1 := game.codeROM[0x80000+i+0]
 		v2 := game.codeROM[0x80000+i+1]
 		game.codeROM[0x80000+i+0] = v2
@@ -54,9 +59,9 @@ func (game *FFight) Load() bool {
 	hagard := game.RetrievePalette(2)
 	dude := game.RetrievePalette(50) // G. Oriber = 50, Wong Who = 51, Bill Bull = 52
 	damned := game.RetrievePalette(31)
-    barrel := game.RetrievePalette(62)
+	barrel := game.RetrievePalette(62)
 
-	axl := game.RetrievePalette(24) // axl 23, slash = 24
+	axl := game.RetrievePalette(24)  // axl 23, slash = 24
 	bred := game.RetrievePalette(46) // jake = 58, simons = 59, dug = 48, bred = 46
 
 	dust := game.RetrievePalette(25)
@@ -65,11 +70,9 @@ func (game *FFight) Load() bool {
 		game.w(i, guy)
 	}
 
-
 	for i := 4; i < 8; i++ {
 		game.w(i, cody)
 	}
-
 
 	for i := 9; i < 12; i++ {
 		game.w(i, hagard)
@@ -98,8 +101,6 @@ func (game *FFight) Load() bool {
 	for i := 26; i < 28; i++ {
 		game.w(i, damned)
 	}
-
-
 
 	return true
 }

@@ -10,7 +10,7 @@ func (game *SSF) GetName() string {
 	return game.name
 }
 
-func makeSSF() SSF {
+func makeSSF() *SSF {
 	var game SSF
 	game.gfxROMSize = 0xc00000
 	game.gfx_banks = []RomSrc{
@@ -27,7 +27,7 @@ func makeSSF() SSF {
 	game.paletteAddr = 0
 
 	game.name = "ssf"
-	return game
+	return &game
 }
 
 func (game *SSF) Load() bool {

@@ -8,7 +8,7 @@ func (game Strider) GetName() string {
 	return game.name
 }
 
-func makeStrider() Strider {
+func makeStrider() *Strider {
 	var game Strider
 	game.gfxROMSize = 0x400000
 	game.gfx_banks = []RomSrc{
@@ -25,7 +25,7 @@ func makeStrider() Strider {
 	game.name = "strider"
 	game.paletteAddr = 0
 
-	return game
+	return &game
 }
 
 func (game *Strider) Load() bool {

@@ -11,10 +11,6 @@ func (game *CPS2Game) unshuffleBytes(buf []uint64, len int) {
 		return
 	}
 
-	//if len%4 == 0 {
-	//	panic(len)
-	//}
-
 	len = len / 2
 
 	game.unshuffleBytes(buf, len)

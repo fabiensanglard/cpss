@@ -8,7 +8,7 @@ func (game CarrierAirWing) GetName() string {
 	return game.name
 }
 
-func makeCAW() CarrierAirWing {
+func makeCAW() *CarrierAirWing {
 	var game CarrierAirWing
 	game.gfxROMSize = 0x400000
 	game.gfx_banks = []RomSrc{
@@ -21,7 +21,7 @@ func makeCAW() CarrierAirWing {
 	game.name = "carrierairwing"
 	game.paletteAddr = 0
 
-	return game
+	return &game
 }
 
 func (game *CarrierAirWing) Load() bool {
