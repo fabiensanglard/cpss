@@ -45,7 +45,7 @@ func (game *FFight) Load() bool {
 	}
 
 	// Swap the latest part 16-bit WORDS.
-	// This is a weird ROM but i am too lazy to make my deinterlave() smarter.
+	// This is a weird ROM. I am too lazy to make my deinterlave() smarter.
 	// So I just hack it in here.
 	for i := 0; i < 0x80000-1; i += 2 {
 		v1 := game.codeROM[0x80000+i+0]
@@ -66,40 +66,40 @@ func (game *FFight) Load() bool {
 
 	dust := game.RetrievePalette(25)
 
-	for i := 0; i < 4; i++ {
-		game.w(i, guy)
+	for i := 0; i < 0x4; i++ {
+		game.set_sheet_color(i, guy)
 	}
 
-	for i := 4; i < 8; i++ {
-		game.w(i, cody)
+	for i := 0x4; i < 0x8; i++ {
+		game.set_sheet_color(i, cody)
 	}
 
-	for i := 9; i < 12; i++ {
-		game.w(i, hagard)
+	for i := 0x9; i < 0xC; i++ {
+		game.set_sheet_color(i, hagard)
 	}
 
-	for i := 15; i < 17; i++ {
-		game.w(i, axl)
+	for i := 0xC; i < 0x11; i++ {
+		game.set_sheet_color(i, axl)
 	}
 
-	for i := 19; i < 20; i++ {
-		game.w(i, dust)
+	for i := 0x13; i < 0x14; i++ {
+		game.set_sheet_color(i, dust)
 	}
 
 	for i := 24; i < 25; i++ {
-		game.w(i, bred)
+		game.set_sheet_color(i, bred)
 	}
 
-	for i := 22; i < 24; i++ {
-		game.w(i, dude)
+	for i := 0x16; i < 0x18; i++ {
+		game.set_sheet_color(i, dude)
 	}
 
-	for i := 23; i < 24; i++ {
-		game.w(i, barrel)
+	for i := 0x17; i < 0x18; i++ {
+		game.set_sheet_color(i, barrel)
 	}
 
-	for i := 26; i < 28; i++ {
-		game.w(i, damned)
+	for i := 0x1A; i < 0x1C; i++ {
+		game.set_sheet_color(i, damned)
 	}
 
 	return true

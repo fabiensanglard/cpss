@@ -15,7 +15,7 @@ func main() {
 	fmt.Println("Extracting...")
 
 	var games = make([]Extractable, 0)
-	games = append(games, makeCAW())
+	//games = append(games, makeCAW())
 	games = append(games, makeFFight())
 	games = append(games, makeForgottenUE())
 	games = append(games, makeGhouls())

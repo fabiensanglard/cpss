@@ -53,7 +53,7 @@ func (game *SSF) Load() bool {
 	cammy.colors[14] = color.RGBA{0xff, 0xff, 0xff, 0xff}
 	cammy.colors[15] = color.RGBA{0xff, 0xff, 0xff, 0xff}
 
-	game.w(144, &cammy)
+	game.set_sheet_color(0x90, &cammy)
 
 	return true
 }

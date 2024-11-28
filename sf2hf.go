@@ -46,6 +46,14 @@ func makeSF2HF() *SF2HF {
 	game.paletteAddr = 0x8ACBA
 
 	game.name = "sf2hf"
+
+	game.areas = []Area{
+		{0, 0x480000 / (1 << 15), OBJ},
+		{0x500000, 0x40000 / (1 << 15), SCR1},
+		{0x540000, 0x80000 / (1 << 15), SCR2},
+		{0x480000, 0x80000 / (1 << 15), SCR3},
+	}
+
 	return &game
 }
 
@@ -53,7 +61,7 @@ func (game *SF2HF) Load() bool {
 	if !game.Game.Load() {
 		return false
 	}
-	game.w(0x00, game.RetrievePalette(1))
-	game.s(123, 0xC8, 8, 2, game.RetrievePalette(0x11E), OBJ)
+	game.set_sheet_color(0x00, game.RetrievePalette(1))
+	game.set_sprite_color(123, 0xC8, 8, 2, game.RetrievePalette(0x11E), OBJ)
 	return true
 }

@@ -54,8 +54,8 @@ func makeSF2() *SF2 {
 		{"sf2_29b.10e", "75f0827f4f7e9f292add46467f8d4fe19b2514c9", 1, 0, 0x20000, 0xc0000, 2},
 		{"sf2_36b.10f", "b807cc495bff3f95d03b061fc629c95f965cb6d8", 1, 0, 0x20000, 0xc0000, 2},
 	}
-	game.paletteAddr = 0x8ACBA
-	game.numPalettes = 300
+	game.paletteAddr = 0x8ACBA // ? Not sure about that but it makes sense
+	game.numPalettes = 300     // ? Not sure about that
 
 	game.areas = []Area{
 		{0, 0x480000 / (1 << 15), OBJ},
@@ -76,6 +76,7 @@ func (game *SF2) Load() bool {
 	font := game.RetrievePalette(0)
 
 	ryu := game.RetrievePalette(1)
+	//ryu_portrait := game.RetrievePalette(159)
 	hon := game.RetrievePalette(2)
 	bla := game.RetrievePalette(3)
 	gui := game.RetrievePalette(4)
@@ -88,12 +89,16 @@ func (game *SF2) Load() bool {
 	fb := game.RetrievePalette(0xE)
 
 	dic := game.RetrievePalette(0x90)
+	dic_cape := game.RetrievePalette(145)
+
 	box := game.RetrievePalette(0xB0)
 	sag := game.RetrievePalette(0xA0)
 	dac := game.RetrievePalette(0xC0)
 
 	flam := game.RetrievePalette(15)
-	elec := game.RetrievePalette(161)
+	//elec := game.RetrievePalette(161)
+	elec := game.RetrievePalette(14)
+	elec2 := game.RetrievePalette(283)
 
 	warrier := game.RetrievePalette(0x11E)
 	logo := game.RetrievePalette(0x11F)
@@ -103,161 +108,278 @@ func (game *SF2) Load() bool {
 	shimo.colors[10] = color.RGBA{0xFF, 0xFF, 0xFF, 0xff}
 	shimo.colors[12] = color.RGBA{0xFF, 0xFF, 0xFF, 0xff}
 
-	game.w(0, ryu)
-	game.s(0, 0xED, 3, 2, ken, OBJ)
+	barrel := game.RetrievePalette(89)
+	car := game.RetrievePalette(217)
 
-	game.w(1, ken)
-	game.s(1, 0x0, 4, 5, ryu, OBJ)
-	game.s(1, 0x48, 8, 11, ryu, OBJ)
-	game.s(1, 0xA1, 3, 6, ryu, OBJ)
-	game.s(1, 0xD0, 1, 1, ryu, OBJ)
-	game.s(1, 0x84, 4, 6, ryu, OBJ)
+	game.set_sheet_color(0, ryu)
+	game.set_sprite_color(0, 0xED, 3, 2, ken, OBJ)
 
-	game.w(2, ryu)
+	game.set_sheet_color(0x1, ken)
+	game.set_sprite_color(0x1, 0x0, 4, 5, ryu, OBJ)
+	game.set_sprite_color(0x1, 0x48, 8, 11, ryu, OBJ)
+	game.set_sprite_color(0x1, 0xA1, 3, 6, ryu, OBJ)
+	game.set_sprite_color(0x1, 0xD0, 1, 1, ryu, OBJ)
+	game.set_sprite_color(0x1, 0x84, 4, 6, ryu, OBJ)
 
-	for i := 4; i <= 9; i++ {
-		game.w(i, hon)
+	game.set_sheet_color(0x2, ryu)
+
+	game.set_sheet_color(0x3, hon)
+	game.set_sprite_color(0x3, 0, 0xF, 0x8, ryu, OBJ)
+
+	for i := 0x4; i <= 0x9; i++ {
+		game.set_sheet_color(i, hon)
 	}
-	game.s(4, 0x01, 7, 5, flam, OBJ)
+	game.set_sprite_color(0x4, 0x01, 7, 5, flam, OBJ)
+	game.set_sprite_color(0x8, 0x04, 4, 4, flam, OBJ)
+	game.set_sprite_color(0x8, 0x44, 1, 3, flam, OBJ)
 
-	for i := 10; i <= 13; i++ {
-		game.w(i, bla)
+	for i := 0xA; i <= 0xD; i++ {
+		game.set_sheet_color(i, bla)
 	}
 
-	for i := 14; i <= 16; i++ {
-		game.w(i, hon)
+	for i := 0xE; i <= 0x10; i++ {
+		game.set_sheet_color(i, hon)
 	}
 
-	game.s(14, 0x67, 3, 1, fb, OBJ)
-	game.s(14, 0x5B, 3, 1, fb, OBJ)
-	game.s(14, 0x4F, 1, 1, fb, OBJ)
+	game.set_sprite_color(0x10, 0x88, 8, 8, bla, OBJ)
+	game.set_sprite_color(0x10, 0x4E, 2, 4, bla, OBJ)
 
-	game.w(17, ryu)
+	game.set_sprite_color(0xE, 0x67, 3, 1, fb, OBJ)
+	game.set_sprite_color(0xE, 0x5B, 3, 1, fb, OBJ)
+	game.set_sprite_color(0xE, 0x4F, 1, 1, fb, OBJ)
+
+	game.set_sheet_color(17, ryu)
 
 	for i := 18; i <= 22; i++ {
-		game.w(i, bla)
+		game.set_sheet_color(i, bla)
 	}
+	game.set_sprite_color(18, 0x96, 1, 1, flam, OBJ)
+	game.set_sprite_color(18, 0x99, 2, 1, flam, OBJ)
+	game.set_sprite_color(18, 0x95, 1, 1, flam, OBJ)
+	game.set_sprite_color(18, 0x98, 2, 1, flam, OBJ)
+	game.set_sprite_color(18, 0xD4, 1, 1, flam, OBJ)
+	game.set_sprite_color(18, 0xF6, 1, 1, flam, OBJ)
+	game.set_sprite_color(18, 0xFD, 3, 1, flam, OBJ)
+	game.set_sprite_color(18, 0x81, 1, 1, flam, OBJ)
+	game.set_sprite_color(18, 0x8E, 1, 1, flam, OBJ)
+
+	game.set_sprite_color(19, 0x02, 2, 1, flam, OBJ)
+	game.set_sprite_color(19, 0x25, 2, 2, flam, OBJ)
+	game.set_sprite_color(19, 0x37, 2, 1, flam, OBJ)
+	game.set_sprite_color(19, 0x52, 3, 1, flam, OBJ)
+	game.set_sprite_color(19, 0x0c, 1, 1, flam, OBJ)
+	game.set_sprite_color(19, 0x0f, 2, 1, flam, OBJ)
 
 	for i := 23; i <= 33; i++ {
-		game.w(i, zan)
+		game.set_sheet_color(i, zan)
 	}
 
-	game.s(33, 0xD0, 16, 3, flam, OBJ)
-	game.s(33, 0x8A, 6, 5, flam, OBJ)
+	game.set_sprite_color(27, 0x00, 5, 4, gui, OBJ)
+
+	//game.set_sprite_color(28, 0x00, 5, 4, elec, OBJ)
+	game.set_sprite_color(28, 0x17, 3, 6, elec2, OBJ)
+	game.set_sprite_color(28, 0x35, 5, 4, elec2, OBJ)
+
+	game.set_sprite_color(33, 0xD0, 16, 3, flam, OBJ)
+	game.set_sprite_color(33, 0x8A, 6, 5, flam, OBJ)
+	game.set_sprite_color(33, 0x05, 5, 6, gui, OBJ)
 
 	for i := 34; i <= 39; i++ {
-		game.w(i, hon)
+		game.set_sheet_color(i, hon)
 	}
+	game.set_sprite_color(35, 0x08, 2, 1, credit, OBJ)
+	game.set_sprite_color(35, 0x048, 2, 1, credit, OBJ)
+
+	game.set_sprite_color(39, 0x00, 2, 2, elec, OBJ)
+	game.set_sprite_color(39, 0x50, 2, 2, elec, OBJ)
+	game.set_sprite_color(39, 0xA0, 2, 3, elec, OBJ)
+	game.set_sprite_color(39, 0x08, 1, 6, elec, OBJ)
+	game.set_sprite_color(39, 0x09, 1, 2, elec, OBJ)
+	game.set_sprite_color(39, 0x49, 1, 1, elec, OBJ)
+	game.set_sprite_color(39, 0x6F, 1, 7, elec, OBJ)
+	game.set_sprite_color(39, 0x9E, 1, 4, elec, OBJ)
+	game.set_sprite_color(39, 0xaD, 1, 1, elec, OBJ)
 
 	for i := 40; i <= 53; i++ {
-		game.w(i, dal)
+		game.set_sheet_color(i, dal)
 	}
 
-	game.s(51, 0x60, 3, 6, chu, OBJ)
-	game.s(51, 0x63, 1, 2, chu, OBJ)
-	game.s(51, 0x3C, 1, 1, bla, OBJ)
-	game.s(51, 0x4C, 3, 1, bla, OBJ)
-	game.s(51, 0x4D, 2, 3, bla, OBJ)
+	game.set_sprite_color(44, 0x06, 2, 5, elec, OBJ)
+	game.set_sprite_color(44, 0x0c, 4, 2, elec, OBJ)
+	game.set_sprite_color(44, 0x2e, 2, 5, elec, OBJ)
+	game.set_sprite_color(44, 0x9f, 1, 6, elec, OBJ)
+	game.set_sprite_color(44, 0xbe, 1, 5, elec, OBJ)
+
+	game.set_sprite_color(51, 0x60, 3, 6, chu, OBJ)
+	game.set_sprite_color(51, 0x63, 1, 2, chu, OBJ)
+	game.set_sprite_color(51, 0x3C, 1, 1, bla, OBJ)
+	game.set_sprite_color(51, 0x4C, 3, 1, bla, OBJ)
+	game.set_sprite_color(51, 0x4D, 2, 3, bla, OBJ)
 
 	for i := 54; i <= 59; i++ {
-		game.w(i, dac)
+		game.set_sheet_color(i, dac)
 	}
+	game.set_sprite_color(58, 0x03, 2, 4, elec, OBJ)
+	game.set_sprite_color(58, 0x50, 5, 3, elec, OBJ)
+	game.set_sprite_color(58, 0x70, 1, 5, elec, OBJ)
+	game.set_sprite_color(58, 0x80, 3, 3, elec, OBJ)
 
 	for i := 60; i <= 70; i++ {
-		game.w(i, ryu)
+		game.set_sheet_color(i, ryu)
 	}
+	// Chunli uses different elec?
+	game.set_sprite_color(62, 0xd4, 2, 3, elec, OBJ)
+	game.set_sprite_color(62, 0xe6, 2, 2, elec, OBJ)
+	game.set_sprite_color(62, 0xc8, 5, 4, elec, OBJ)
 
-	game.s(69, 0x0D, 1, 1, credit, OBJ)
-	game.s(69, 0x40, 1, 1, credit, OBJ)
-	game.s(69, 0x43, 1, 1, credit, OBJ)
-	game.s(69, 0x4E, 1, 1, credit, OBJ)
-	game.s(69, 0xC2, 1, 1, credit, OBJ)
-	game.s(69, 0x54, 1, 1, credit, OBJ)
-	game.s(69, 0x58, 1, 1, credit, OBJ)
-	game.s(69, 0x5F, 1, 1, credit, OBJ)
-	game.s(69, 0xA1, 1, 1, credit, OBJ)
-	game.s(69, 0xA6, 1, 2, shimo, OBJ)
-	game.s(69, 0xB6, 3, 1, shimo, OBJ)
-	game.s(69, 0xBE, 2, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x0D, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x40, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x43, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x4E, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0xC2, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x54, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x58, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0x5F, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0xA1, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0xA6, 1, 2, shimo, OBJ)
+	game.set_sprite_color(69, 0xB6, 3, 1, shimo, OBJ)
+	game.set_sprite_color(69, 0xBE, 2, 1, credit, OBJ)
 
-	game.s(69, 0x98, 1, 1, ken, OBJ)
-	game.s(69, 0xAA, 1, 1, ken, OBJ)
-	game.s(69, 0xB9, 2, 1, ken, OBJ)
+	game.set_sprite_color(69, 0x98, 1, 1, ken, OBJ)
+	game.set_sprite_color(69, 0xAA, 1, 1, ken, OBJ)
+	game.set_sprite_color(69, 0xB9, 2, 1, ken, OBJ)
 
-	game.s(69, 0xC2, 2, 2, credit, OBJ)
-	game.s(69, 0xC4, 1, 1, credit, OBJ)
+	game.set_sprite_color(69, 0xC2, 2, 2, credit, OBJ)
+	game.set_sprite_color(69, 0xC4, 1, 1, credit, OBJ)
 
-	game.s(69, 0xC5, 2, 1, chu, OBJ)
-	game.s(69, 0xD4, 2, 2, chu, OBJ)
-	game.s(69, 0xE0, 1, 1, chu, OBJ)
-	game.s(69, 0xE3, 1, 1, chu, OBJ)
-	game.s(69, 0xE6, 2, 1, chu, OBJ)
-	game.s(69, 0xF8, 1, 1, chu, OBJ)
-	game.s(69, 0xCC, 4, 4, chu, OBJ)
+	game.set_sprite_color(69, 0xC5, 2, 1, chu, OBJ)
+	game.set_sprite_color(69, 0xD4, 2, 2, chu, OBJ)
+	game.set_sprite_color(69, 0xE0, 1, 1, chu, OBJ)
+	game.set_sprite_color(69, 0xE3, 1, 1, chu, OBJ)
+	game.set_sprite_color(69, 0xE6, 2, 1, chu, OBJ)
+	game.set_sprite_color(69, 0xF8, 1, 1, chu, OBJ)
+	game.set_sprite_color(69, 0xCC, 4, 4, chu, OBJ)
 
-	game.w(71, ken)
-	game.s(71, 0xC0, 2, 2, shimo, OBJ)
-	game.s(71, 0x38, 2, 1, shimo, OBJ)
-	game.s(71, 0x8D, 3, 4, flam, OBJ)
-	game.s(71, 0xCF, 1, 4, flam, OBJ)
-	game.s(71, 0x2D, 3, 1, chu, OBJ)
+	game.set_sheet_color(71, ken)
+	game.set_sprite_color(71, 0xC0, 2, 2, shimo, OBJ)
+	game.set_sprite_color(71, 0x38, 2, 1, shimo, OBJ)
+	game.set_sprite_color(71, 0x8D, 3, 4, flam, OBJ)
+	game.set_sprite_color(71, 0xCF, 1, 4, flam, OBJ)
+	game.set_sprite_color(71, 0x2D, 3, 1, chu, OBJ)
 
 	for i := 72; i <= 77; i++ {
-		game.w(i, box)
+		game.set_sheet_color(i, box)
 	}
+	game.set_sprite_color(0x4A, 0xC6, 10, 2, elec, OBJ)
+	game.set_sprite_color(0x4A, 0xE7, 9, 1, elec, OBJ)
+	game.set_sprite_color(0x4A, 0xFC, 4, 1, elec, OBJ)
 
 	for i := 78; i <= 83; i++ {
-		game.w(i, sag)
+		game.set_sheet_color(i, sag)
 	}
-	game.s(78, 0x00, 4, 1, box, OBJ)
-	game.s(78, 0x10, 3, 4, box, OBJ)
+	game.set_sprite_color(78, 0x00, 4, 1, box, OBJ)
+	game.set_sprite_color(78, 0x10, 3, 4, box, OBJ)
 
-	game.w(84, chu)
+	game.set_sheet_color(84, chu)
+
+	game.set_sprite_color(0x54, 0x01, 4, 7, elec, OBJ)
+	game.set_sprite_color(0x54, 0x10, 6, 1, elec, OBJ)
+	game.set_sprite_color(0x54, 0x15, 1, 3, elec, OBJ)
+	game.set_sprite_color(0x54, 0x50, 1, 2, elec, OBJ)
+	game.set_sprite_color(0x54, 0x72, 3, 1, elec, OBJ)
 
 	for i := 85; i <= 89; i++ {
-		game.w(i, bla)
+		game.set_sheet_color(i, bla)
 	}
 
 	for i := 90; i <= 98; i++ {
-		game.w(i, dic)
+		game.set_sheet_color(i, dic)
 	}
+	game.set_sprite_color(0x60, 0x70, 4, 6, elec, OBJ)
+	game.set_sprite_color(0x60, 0x61, 3, 1, elec, OBJ)
+	game.set_sprite_color(0x60, 0xD0, 3, 1, elec, OBJ)
+	game.set_sprite_color(0x60, 0xA3, 1, 3, elec, OBJ)
 
-	game.s(99, 0x24, 4, 8, elec, OBJ)
+	game.set_sprite_color(0x62, 0x00, 5, 5, dic_cape, OBJ)
+	game.set_sprite_color(0x62, 0x05, 1, 5, dic_cape, OBJ)
+
+	game.set_sprite_color(0x61, 0x50, 5, 5, dic_cape, OBJ)
+	game.set_sprite_color(0x61, 0x75, 1, 2, dic_cape, OBJ)
+
+	game.set_sprite_color(0x62, 0xA0, 3, 6, dic_cape, OBJ)
+	game.set_sprite_color(0x62, 0xC3, 2, 2, dic_cape, OBJ)
+	game.set_sprite_color(0x62, 0xE3, 1, 2, dic_cape, OBJ)
+
+	//game.set_sprite_color(0x61, 0xF5, 1, 1, dic_cape, OBJ)
+	//game.set_sprite_color(0x62, 0xC5, 1, 2, dic_cape, OBJ)
+	//game.set_sprite_color(0x62, 0x15, 5, 5, dic_cape, OBJ)
+
+	game.set_sprite_color(0x62, 0x9A, 6, 4, dic_cape, OBJ)
+	game.set_sprite_color(0x62, 0x8D, 3, 1, dic_cape, OBJ)
+	game.set_sprite_color(0x62, 0xDC, 4, 1, dic_cape, OBJ)
+
+	game.set_sprite_color(0x63, 0x00, 4, 0xF, zan, OBJ)
+	game.set_sprite_color(0x63, 0x04, 4, 12, zan, OBJ)
+
+	// Zangief electricyt
+	game.set_sprite_color(0x63, 0x24, 4, 8, elec, OBJ)
+	game.set_sprite_color(0x63, 0x63, 1, 4, elec, OBJ)
+	game.set_sprite_color(0x63, 0x82, 1, 2, elec, OBJ)
+	game.set_sprite_color(0x63, 0x28, 1, 5, elec, OBJ)
+	game.set_sprite_color(0x63, 0x49, 1, 2, elec, OBJ)
 
 	for i := 100; i <= 101; i++ {
-		game.w(i, gui)
+		game.set_sheet_color(i, gui)
 	}
 
 	for i := 102; i <= 111; i++ {
-		game.w(i, chu)
+		game.set_sheet_color(i, chu)
 	}
 
 	for i := 112; i <= 113; i++ {
-		game.w(i, bla)
+		game.set_sheet_color(i, bla)
 	}
 
 	for i := 114; i <= 122; i++ {
-		game.w(i, gui)
+		game.set_sheet_color(i, gui)
 	}
 
-	game.s(123, 0xC8, 8, 2, warrier, OBJ)
+	game.set_sprite_color(123, 0xC8, 8, 2, warrier, OBJ)
 
-	game.w(128, font)
-	game.w(129, font)
+	game.set_sheet_color(128, font)
+	game.set_sheet_color(129, font)
 
-	game.s(129, 0xDE, 2, 2, health_bar, OBJ)
-	game.s(129, 0xF0, 16, 1, health_bar, OBJ)
+	game.set_sprite_color(129, 0xDE, 2, 2, health_bar, OBJ)
+	game.set_sprite_color(129, 0xF0, 16, 1, health_bar, OBJ)
 
-	game.s(130, 0x40, 16, 7, logo, OBJ)
-	game.s(130, 0xB1, 7, 1, logo, OBJ)
-	game.s(130, 0xC0, 9, 3, logo, OBJ)
-	game.s(130, 0xF0, 8, 1, logo, OBJ)
+	game.set_sprite_color(0x82, 0x00, 2, 2, ryu, OBJ)
+	game.set_sprite_color(0x82, 0x02, 2, 2, hon, OBJ)
+	game.set_sprite_color(0x82, 0x04, 2, 2, bla, OBJ)
+	game.set_sprite_color(0x82, 0x06, 2, 2, gui, OBJ)
+	game.set_sprite_color(0x82, 0x08, 2, 2, sag, OBJ)
+	game.set_sprite_color(0x82, 0x0A, 2, 2, bla, OBJ)
+	game.set_sprite_color(0x82, 0x20, 2, 2, ken, OBJ)
+	game.set_sprite_color(0x82, 0x22, 2, 2, chu, OBJ)
+	game.set_sprite_color(0x82, 0x24, 2, 2, zan, OBJ)
+	game.set_sprite_color(0x82, 0x26, 2, 2, dal, OBJ)
+	game.set_sprite_color(0x82, 0x28, 2, 2, box, OBJ)
+	game.set_sprite_color(0x82, 0x2A, 2, 2, dic, OBJ)
+	game.set_sprite_color(0x82, 0x40, 16, 7, logo, OBJ)
+	game.set_sprite_color(0x82, 0xB1, 7, 1, logo, OBJ)
+	game.set_sprite_color(0x82, 0xC0, 9, 3, logo, OBJ)
+	game.set_sprite_color(0x82, 0xF0, 8, 1, logo, OBJ)
 
 	for i := 136; i <= 143; i++ {
-		game.w(i, zan)
+		game.set_sheet_color(i, zan)
 	}
 
-	game.w(144, font)
+	game.set_sprite_color(0x86, 0x08, 8, 10, barrel, OBJ)
+	game.set_sprite_color(0x86, 0x40, 8, 4, flam, OBJ)
+
+	// Car
+	game.set_sheet_color(0x87, car)
+
+	game.set_sheet_color(144, font)
 	return true
 }
 

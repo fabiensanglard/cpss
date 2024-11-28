@@ -18,6 +18,11 @@ const SHEET_HEIGHT = 16
 
 const TILES_SIZE = TILE_WIDTH * TILE_HEIGHT / 2
 
+const TILES_PER_SHEET_OBJ = 16 * 16
+const TILES_PER_SHEET_SCR1 = 32 * 32
+const TILES_PER_SHEET_SCR2 = 16 * 16
+const TILES_PER_SHEET_SCR3 = 8 * 8
+
 const SHEET_SIZE = SHEET_WIDTH * SHEET_HEIGHT * TILES_SIZE // 32 KiB
 
 const PALETTE_SIZE = 32
@@ -285,7 +290,7 @@ func (game *Game) dumpSheet(areaID int, sheet []byte, tileType TileType, sheetID
 			offset += bytesPerTile
 		}
 	}
-	pngfilename := fmt.Sprintf("%s/%s/area_%d_%04d.png", "/Users/leaf/repos/cps_sheet", game.extractFolder(), areaID, sheetID)
+	pngfilename := fmt.Sprintf("%s/%s/area_%d_0x%04x.png", "./", game.extractFolder(), areaID, sheetID<<8)
 	f, _ := os.Create(pngfilename)
 	defer func(f *os.File) {
 		err := f.Close()
@@ -298,8 +303,12 @@ func (game *Game) dumpSheet(areaID int, sheet []byte, tileType TileType, sheetID
 		fmt.Printf("err=%d", err)
 		return
 	}
-	svgFileName := fmt.Sprintf("%s/%s/area_%d_%04d.svg", "/Users/leaf/repos/cps_sheet", game.extractFolder(), areaID, sheetID)
+	svgFileName := fmt.Sprintf("%s/%s/area_%d_0x%04x.svg", "./", game.extractFolder(), areaID, sheetID<<8)
 	png2svg(pngfilename, svgFileName, sheetID, tileType)
+	e := os.Remove(pngfilename)
+	if e != nil {
+		log.Fatal(e)
+	}
 }
 
 func (game *Game) desinterleave(roms []RomSrc, dstROM []byte) bool {
@@ -389,8 +398,8 @@ func (game *Game) DumpPaletteToHTML() {
 	os.WriteFile(filename, game.codeROM, 0666)
 }
 
-func (game *Game) w(sheetID int, p *Palette) {
-	sheet := make([]*Palette, 32*32) // Able to hold 16x16(OBJ,SCR2) 8x8 (SCR1), and 32x32 (SCR3) sheets
+func (game *Game) set_sheet_color(sheetID int, p *Palette) {
+	sheet := make([]*Palette, TILES_PER_SHEET_SCR1) // Able to hold any 16x16(OBJ,SCR2) 8x8 (SCR1), and 32x32 (SCR3) sheet
 
 	for i, _ := range sheet {
 		sheet[i] = p
@@ -399,10 +408,10 @@ func (game *Game) w(sheetID int, p *Palette) {
 	game.palettes[sheetID] = sheet
 }
 
-func (game *Game) s(sheetID int, tileID int, width int, height int, palette *Palette, tileType TileType) {
+func (game *Game) set_sprite_color(sheetID int, tileID int, width int, height int, palette *Palette, tileType TileType) {
 	_, hasSheet := game.palettes[sheetID]
 	if !hasSheet {
-		game.w(sheetID, &greyPalette)
+		game.set_sheet_color(sheetID, &greyPalette)
 	}
 
 	sheet := game.palettes[sheetID]
@@ -413,10 +422,6 @@ func (game *Game) s(sheetID int, tileID int, width int, height int, palette *Pal
 			sheet[tileID+i*tilesPerAxis+j] = palette
 		}
 	}
-}
-
-func (game *Game) u(sheetID int, tileID int, palette *Palette, tileType TileType) {
-	game.s(sheetID, tileID, 1, 1, palette, tileType)
 }
 
 func (game *Game) GetPalette(sheetID int, tileNumber int) *Palette {
@@ -438,7 +443,6 @@ func (game *Game) RetrievePalette(paletteId int) *Palette {
 	if game.codeROM == nil {
 		return &greyPalette
 	}
-
 	base := game.paletteAddr + paletteId*PALETTE_SIZE
 	paletteSlice := game.codeROM[base : base+PALETTE_SIZE]
 	return PaletteFrom(paletteSlice)
