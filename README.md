@@ -1,5 +1,6 @@
 # A tool to reconstruct Capcom CPS-1 paper sheets
 
+Home page: [https://fabiensanglard.net/cpss/](https://fabiensanglard.net/cpss/)
 ## How to build
 
 ```
@@ -8,10 +9,10 @@ go build -o cpss src/*.go
 
 ## How to add a driver
 
-`cpss` needs to know how to de-interlave the GFXROM and also which region are OBJ, SCROLL1, SCROLL2, and SCROLL3.
+`cpss` needs to know how to deinterleave the GFXROM and also which region are OBJ, SCROLL1, SCROLL2, and SCROLL3.
 This is what drivers are for. You can see the numerous examples. To add new game, lookup mame's cps1.cpp.
 
-## How to find palettes
+## How to find the palette base
 
 The GFXROM only contains the pens. For the ink, you need to find the palette location which is in the 68000 ROM.
 A good way to do that is to play the game in Mame, set a breakpoint and lookup the palettes. 
@@ -32,3 +33,7 @@ hexdump -ve '1/1 "%02X"' pics/sf2/code.bin | grep -b -o  01110FD90FB80E970C86096
 ```
 
 That is how sf2 driver sets the palette base to 0x8ACBA (568506). Because Ryu is the second palette and palette is 32 bytes long
+
+## How to find more palettes
+
+`cpss` also generate an HTML page, [palettes.html](https://fabiensanglard.net/cpss/palettes.html) so you can visually inspect colors and speed the discovery process.
